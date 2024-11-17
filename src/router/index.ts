@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import SurveyPage from "@/pages/SurveyPage.vue";
 import SuccessPage from "@/pages/SuccessPage.vue";
+import PreviewAnswers from "@/pages/PreviewAnswers.vue";
 
 const routes = [
     {
@@ -12,6 +13,11 @@ const routes = [
         path: "/success",
         name: "SuccessPage",
         component: SuccessPage,
+    },
+    {
+        path: "/preview",
+        name: "PreviewAnswers",
+        component: PreviewAnswers,
     },
 ];
 
