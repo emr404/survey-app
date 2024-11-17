@@ -1,0 +1,62 @@
+[
+	{
+		"id": "1",
+		"text": "What type of travel destination do you prefer?",
+		"options": ["Beach", "Mountain", "City", "Countryside"]
+	},
+	{
+		"id": "2",
+		"text": "What is your preferred mode of travel?",
+		"options": ["Airplane", "Train", "Car", "Ship"]
+	},
+	{
+		"id": "3",
+		"text": "Which continent would you like to explore next?",
+		"options": ["Asia", "Europe", "Africa", "South America"]
+	},
+	{
+		"id": "4",
+		"text": "What kind of accommodation do you prefer while travelling?",
+		"options": ["Hotel", "Hostel", "Holiday Rental", "Camping"]
+	},
+	{
+		"id": "5",
+		"text": "What is your go to travel activity?",
+		"options": [
+			"Sightseeing",
+			"Adventure Sports",
+			"Relaxation",
+			"Cultural Experiences"
+		]
+	},
+	{
+		"id": "6",
+		"text": "How long is your ideal holiday?",
+		"options": ["A weekend", "One week", "Two weeks", "A month or more"]
+	},
+	{
+		"id": "7",
+		"text": "What is your favourite travel season?",
+		"options": ["Summer", "Winter", "Spring", "Autumn"]
+	},
+	{
+		"id": "8",
+		"text": "What type of cuisine do you most enjoy trying while travelling?",
+		"options": [
+			"Local Street Food",
+			"Fine Dining",
+			"Home-cooked Meals",
+			"Fusion Cuisine"
+		]
+	},
+	{
+		"id": "9",
+		"text": "Who is your favourite travel companion?",
+		"options": ["Solo", "Family", "Friends", "Partner"]
+	},
+	{
+		"id": "10",
+		"text": "What is your most important factor when choosing a travel destination?",
+		"options": ["Budget", "Safety", "Adventure", "Relaxation"]
+	}
+]
