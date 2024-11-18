@@ -10,7 +10,7 @@
                 enabled:bg-blue-600 enabled:hover:bg-blue-700 enabled:text-white">
             Next
         </button>
-        <button @click="goToPreview" v-if="isLastQuestion || !hasAnswered" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base rounded-lg font-medium transition-colors duration-200
+        <button @click="goToPreview" v-if="isLastQuestion && hasAnswered" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base rounded-lg font-medium transition-colors duration-200
                 enabled:bg-blue-600 enabled:hover:bg-blue-700 enabled:text-white">
             Preview Answers
         </button>
