@@ -1,21 +1,22 @@
 <template>
-    <div class="flex justify-between mt-8">
-        <button @click="previous" :disabled="isFirstQuestion" class="px-6 py-2 rounded-lg font-medium transition-colors duration-200
-            disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50
-            enabled:bg-blue-600 enabled:hover:bg-blue-700 enabled:text-white">
+    <div class="flex flex-wrap justify-between items-center gap-4 mt-8 sm:flex-nowrap">
+        <button @click="previous" :disabled="isFirstQuestion" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base rounded-lg font-medium transition-colors duration-200
+                disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50
+                enabled:bg-blue-600 enabled:hover:bg-blue-700 enabled:text-white">
             Previous
         </button>
-        <button @click="next" :disabled="isLastQuestion || !hasAnswered" class="px-6 py-2 rounded-lg font-medium transition-colors duration-200
-            disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50
-            enabled:bg-blue-600 enabled:hover:bg-blue-700 enabled:text-white">
+        <button @click="next" :disabled="isLastQuestion || !hasAnswered" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base rounded-lg font-medium transition-colors duration-200
+                disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50
+                enabled:bg-blue-600 enabled:hover:bg-blue-700 enabled:text-white">
             Next
         </button>
-        <button @click="goToPreview" v-if="isLastQuestion || !hasAnswered" class="px-6 py-2 rounded-lg font-medium transition-colors duration-200
-            enabled:bg-blue-600 enabled:hover:bg-blue-700 enabled:text-white">
+        <button @click="goToPreview" v-if="isLastQuestion || !hasAnswered" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base rounded-lg font-medium transition-colors duration-200
+                enabled:bg-blue-600 enabled:hover:bg-blue-700 enabled:text-white">
             Preview Answers
         </button>
     </div>
 </template>
+
 
 <script lang="ts">
 import { defineComponent, computed } from "vue";

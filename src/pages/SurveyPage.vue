@@ -1,7 +1,9 @@
 <template>
-    <div class="min-h-screen bg-gray-100 py-8">
-        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
-            <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Travel Companion</h1>
+    <div class="min-h-screen bg-gray-100 py-4 sm:py-8">
+        <div class="w-full max-w-sm sm:max-w-md mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6">
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">
+                Travel Companion
+            </h1>
             <QuestionDisplay />
             <NavigationButtons />
         </div>
