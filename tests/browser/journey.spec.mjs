@@ -178,3 +178,17 @@ test('unfinished trip edits survive refresh and stay blocked until corrected', a
   await expect(page.getByRole('heading', { name: 'Does this feel like you?' })).toBeVisible();
   await expect(page.getByText('20 days, Flexible dates', { exact: true })).toBeVisible();
 });
+
+test('quota errors explain the account action and preserve saved recommendations', async ({ page }) => {
+  await shortlist(page, 2);
+  await page.route('**/api/recommendations', route => route.fulfill({ status: 503, json: {
+    code: 'insufficient_quota', error: 'OpenAI reports insufficient API quota. Check your API credit balance, billing and project or organisation limits. Retrying alone will not restore access.',
+  } }));
+  await page.getByRole('button', { name: 'Lower budget −20%' }).click();
+  await page.getByRole('button', { name: /Update recommendations/ }).click();
+  await expect(page.getByRole('heading', { name: 'Your AI account needs attention.' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Check API billing/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Check API limits/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Retry after updating account' })).toBeVisible();
+  await expect(page.locator('.destination-card')).toHaveCount(3);
+});

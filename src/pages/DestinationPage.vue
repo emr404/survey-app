@@ -9,7 +9,7 @@
     </div>
     <section class="plan-cta panel"><div><p class="eyebrow">04 / From possibility to a plan</p><h2>{{ existingPlan ? 'Your plan is ready to keep shaping.' : 'Give this trip a little shape.' }}</h2><p>Build an editable {{ batch.preferences.days }}-day itinerary. You can remove, replace and reorder every activity before approving.</p><p v-if="store.state.itinerary && !existingPlan" class="small muted">A successful response will replace your current saved itinerary. Your existing plan stays safe if this request fails or is cancelled.</p></div><router-link v-if="existingPlan" to="/itinerary" class="button primary">Continue editing my plan →</router-link><button v-else @click="buildPlan" :disabled="stale || status === 'requesting'" class="button primary">Build my {{ batch.preferences.days }}-day itinerary →</button></section>
     <p v-if="serviceStatus.mode === 'live' && batch.result.mode === 'demo'" class="notice">The server is now in live mode. Creating this plan sends your saved brief and this demo destination to OpenAI.</p>
-    <RequestStatus :status="status" :error="error" :mode="serviceStatus.mode" title="Waiting for your itinerary" @cancel="cancel" @retry="buildPlan" />
+    <RequestStatus :status="status" :error="error" :code="errorCode" :mode="serviceStatus.mode" title="Waiting for your itinerary" @cancel="cancel" @retry="buildPlan" />
   </div>
   <div v-else class="page"><h1 tabindex="-1">This possibility isn’t in your shortlist.</h1><p>It may belong to an earlier set of results. Your saved plan is still available in “Your plan”.</p><router-link to="/results" class="button primary">Return to the shortlist →</router-link></div>
 </template>
@@ -24,7 +24,7 @@ import { logChange } from '@/services/history';
 import EvidenceNotice from '@/components/EvidenceNotice.vue';
 import RequestStatus from '@/components/RequestStatus.vue';
 const store = useStore(); const route = useRoute(); const router = useRouter();
-const { status, error, run, cancel } = useTravelRequest();
+const { status, error, errorCode, run, cancel } = useTravelRequest();
 const batch = computed(() => store.state.batch);
 const destination = computed(() => batch.value?.result.destinations.find(d => d.id === route.params.id));
 const stale = computed(() => !batch.value || !samePreferences(batch.value.preferences, store.state.preferences));

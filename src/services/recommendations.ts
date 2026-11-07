@@ -4,6 +4,9 @@ import { RequestGate } from '@/domain/requests';
 import { parseRecommendations, parseItinerary } from '@/domain/responses';
 
 export const serviceStatus = reactive({ checked: false, available: false, mode: 'unknown', error: '' });
+class TravelRequestError extends Error {
+  constructor(message: string, readonly code: string) { super(message); }
+}
 export async function checkService(): Promise<void> {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 8000);
@@ -26,8 +29,9 @@ async function request(path: string, body: unknown, signal: AbortSignal): Promis
   }
   const value: unknown = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = value as { error?: unknown } | null;
-    throw new Error(typeof error?.error === 'string' ? error.error : 'The travel service could not complete this request. Please retry.');
+    const error = value as { error?: unknown; code?: unknown } | null;
+    throw new TravelRequestError(typeof error?.error === 'string' ? error.error : 'The travel service could not complete this request. Please retry.',
+      typeof error?.code === 'string' ? error.code : 'request_failed');
   }
   return value;
 }
@@ -41,19 +45,24 @@ export function useTravelRequest() {
   const gate = new RequestGate();
   const status = ref<'idle' | 'requesting' | 'cancelled' | 'error' | 'done'>('idle');
   const error = ref('');
-  function cancel() { gate.cancel(); status.value = 'cancelled'; error.value = ''; }
+  const errorCode = ref('');
+  function cancel() { gate.cancel(); status.value = 'cancelled'; error.value = ''; errorCode.value = ''; }
   async function run<T>(operation: (signal: AbortSignal) => Promise<T>, accept: (value: T) => void, timeoutMs = 60000) {
     const { id, signal } = gate.begin();
-    status.value = 'requesting'; error.value = '';
+    status.value = 'requesting'; error.value = ''; errorCode.value = '';
     let timedOut = false;
     const timeout = window.setTimeout(() => { if (!gate.current(id)) return; timedOut = true; gate.cancel(); status.value = 'error'; error.value = 'This request took too long. Your previous work is saved. Please retry.'; }, Math.min(timeoutMs, 2147483647));
     try {
       const result = await operation(signal);
       if (gate.current(id)) { accept(result); status.value = 'done'; }
     } catch (cause) {
-      if (gate.current(id) && !timedOut) { error.value = cause instanceof Error ? cause.message : 'Something went wrong. Please retry.'; status.value = 'error'; }
+      if (gate.current(id) && !timedOut) {
+        error.value = cause instanceof Error ? cause.message : 'Something went wrong. Please retry.';
+        errorCode.value = cause instanceof TravelRequestError ? cause.code : 'request_failed';
+        status.value = 'error';
+      }
     } finally { window.clearTimeout(timeout); }
   }
   onBeforeUnmount(() => gate.cancel());
-  return { status, error, run, cancel };
+  return { status, error, errorCode, run, cancel };
 }

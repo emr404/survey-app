@@ -3,7 +3,37 @@ import { demoRecommendations, demoItinerary } from './demo.mjs';
 const { contracts, preferenceIssues, validDestination, validRecommendations, validItinerary } = validation;
 
 export class TravelError extends Error {
-  constructor(status, message) { super(message); this.status = status; }
+  constructor(status, message, code = 'request_failed') { super(message); this.status = status; this.code = code; }
+}
+
+async function providerError(response) {
+  // Only read known codes. Raw provider messages may contain credentials or other
+  // request details and must never be forwarded to the browser.
+  const data = await response.json().catch(() => null);
+  const error = data?.error;
+  const quotaMessages = {
+    credit_balance_exhausted: 'OpenAI reports that your API credit balance is exhausted. Check your API billing and available credits before retrying.',
+    project_spend_limit_exceeded: 'OpenAI reports that this project has reached its spending limit. Check the limits for the project that owns your API key before retrying.',
+    organization_spend_limit_exceeded: 'OpenAI reports that your organisation has reached its spending limit. Check your organisation limits before retrying.',
+    organization_usage_limit_exceeded: 'OpenAI reports that your organisation has reached its API usage limit. Check the approved usage limits for your account before retrying.',
+    insufficient_quota: 'OpenAI reports insufficient API quota. Check your API credit balance, billing and project or organisation limits. Retrying alone will not restore access.',
+  };
+  if (response.status === 429) {
+    const code = typeof error?.code === 'string' && Object.hasOwn(quotaMessages, error.code) ? error.code
+      : error?.type === 'insufficient_quota' ? 'insufficient_quota' : null;
+    if (code) return new TravelError(503, quotaMessages[code], code);
+    if (['rate_limit_exceeded', 'slow_down'].includes(error?.code) || error?.type === 'rate_limit_error') {
+      const delay = Number(response.headers.get('retry-after'));
+      const wait = Number.isFinite(delay) && delay > 0 && delay <= 86400
+        ? `Wait at least ${Math.ceil(delay)} seconds before retrying.` : 'Wait before retrying, or check your model’s rate limits.';
+      return new TravelError(503, `OpenAI has temporarily rate-limited this request. ${wait} Your preferences are saved.`, 'rate_limit_exceeded');
+    }
+    return new TravelError(503, 'OpenAI returned a limit error without a recognised cause. Check your API credits and usage limits, or wait if you have been sending requests frequently.', 'provider_limit_unknown');
+  }
+  if (response.status === 401) return new TravelError(502, 'OpenAI rejected the API key. Check OPENAI_API_KEY in your local server configuration and restart the API.', 'provider_authentication');
+  if ([403, 404].includes(response.status)) return new TravelError(502, 'The configured AI model is unavailable to this API project. Check model access and OPENAI_MODEL in the server configuration.', 'provider_model_access');
+  if (response.status === 400) return new TravelError(502, 'OpenAI rejected the request configuration. Check the configured model and response schema.', 'provider_configuration');
+  return new TravelError(502, 'The AI service could not complete this request. Your previous work is saved; please try again later.', 'provider_unavailable');
 }
 export function validateTrip(value) {
   const p = value?.preferences;
@@ -36,8 +66,7 @@ async function modelOutput(kind, input, options, signal) {
     if (['TimeoutError', 'AbortError'].includes(error.name)) throw new TravelError(504, 'The AI service took too long. Your previous work is saved; please retry.');
     throw new TravelError(502, 'The AI service could not be reached. Please retry.');
   }
-  if (!response.ok) throw new TravelError(response.status === 429 ? 503 : 502,
-    response.status === 429 ? 'The AI service is busy or has reached its usage limit. Please try later.' : 'The AI service could not complete this request. Your previous work is saved.');
+  if (!response.ok) throw await providerError(response);
   try {
     const data = await response.json();
     if (data.status !== 'completed') throw new Error('Incomplete output');

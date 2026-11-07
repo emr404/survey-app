@@ -50,7 +50,10 @@ export function createTravelServer(options = {}) {
         send(200, result);
       } finally { active--; }
     } catch (error) {
-      send(error instanceof TravelError ? error.status : 500, { error: error instanceof TravelError ? error.message : 'Something went wrong. Please retry.' });
+      send(error instanceof TravelError ? error.status : 500, {
+        error: error instanceof TravelError ? error.message : 'Something went wrong. Please retry.',
+        code: error instanceof TravelError ? error.code : 'request_failed',
+      });
     }
   });
 }

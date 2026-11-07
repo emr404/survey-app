@@ -8,7 +8,7 @@
       <div v-if="pendingChanges.length" class="pending-changes"><h3>Changes ready to apply</h3><ul><li v-for="change in pendingChanges" :key="change">{{ change }}</li></ul><div class="actions"><button class="button primary" @click="generate" :disabled="status === 'requesting' || !!Object.keys(validationErrors).length">Update recommendations →</button><button class="text-button" @click="undoRefinements" :disabled="status === 'requesting'">Discard pending changes</button><router-link to="/" class="text-button">Edit the full brief</router-link></div></div>
       <details class="inline-preferences"><summary>View and edit refinement values</summary><div class="field-grid"><div class="field"><label for="refine-budget">Daily budget / person ({{ preferences.currency }})</label><input id="refine-budget" type="number" min="1" max="10000" :value="preferences.dailyBudget" @input="editBudget" :disabled="status === 'requesting'" /></div><div class="field"><label for="refine-journey">Maximum one-way journey</label><select id="refine-journey" :value="preferences.maxJourneyHours ?? ''" @change="editJourney" :disabled="status === 'requesting'"><option value="">No limit</option><option v-for="hour in journeyOptions" :key="hour" :value="hour">{{ hour }} hours</option></select></div><div class="field"><label for="refine-crowds">Crowds</label><select id="refine-crowds" :value="preferences.crowds" @change="editCrowds" :disabled="status === 'requesting'"><option>No preference</option><option>Quieter places</option></select></div></div><p v-for="(error, key) in validationErrors" :key="key" class="field-error">{{ error }}</p></details>
     </section>
-    <RequestStatus :status="status" :error="error" title="Waiting for your recommendations" :mode="serviceStatus.mode" @cancel="cancel" @retry="generate" />
+    <RequestStatus :status="status" :error="error" :code="errorCode" title="Waiting for your recommendations" :mode="serviceStatus.mode" @cancel="cancel" @retry="generate" />
     <template v-if="batch">
       <EvidenceNotice :mode="batch.result.mode" compact />
       <div v-if="pendingChanges.length" class="notice" role="status">Showing your previous shortlist. It reflects the earlier brief until you update recommendations.</div>
@@ -38,7 +38,7 @@ import RequestStatus from '@/components/RequestStatus.vue';
 import PreferenceSummary from '@/components/PreferenceSummary.vue';
 import HistoryLog from '@/components/HistoryLog.vue';
 const store = useStore(); const route = useRoute(); const router = useRouter();
-const { status, error, run, cancel } = useTravelRequest();
+const { status, error, errorCode, run, cancel } = useTravelRequest();
 const batch = computed(() => store.state.batch);
 const preferences = computed(() => store.state.preferences);
 const pendingChanges = computed(() => batch.value ? describeChanges(batch.value.preferences, preferences.value) : []);

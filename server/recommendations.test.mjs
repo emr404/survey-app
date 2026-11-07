@@ -145,3 +145,25 @@ test('long live itineraries use validated sections, preserve context and make ac
   const ids = result.days.flatMap(day => day.activities.map(activity => activity.id));
   assert.equal(new Set(ids).size, ids.length);
 });
+
+test('quota and spending errors show actionable causes without leaking provider details', async () => {
+  for (const code of ['insufficient_quota', 'credit_balance_exhausted', 'project_spend_limit_exceeded', 'organization_spend_limit_exceeded', 'organization_usage_limit_exceeded']) {
+    await withServer({ mode: 'live', apiKey: 'test-secret', fetchImpl: async () => new Response(JSON.stringify({ error: { code, type: 'insufficient_quota', message: 'private test-secret provider details' } }), { status: 429 }) }, async post => {
+      const response = await post();
+      assert.equal(response.status, 503);
+      const body = await response.json();
+      assert.equal(body.code, code);
+      assert.match(body.error, /OpenAI reports/);
+      assert.doesNotMatch(body.error, /private|test-secret|busy/);
+    });
+  }
+});
+
+test('temporary rate limits honour the provider retry delay and unknown 429s do not guess', async () => {
+  await assert.rejects(generateRecommendations(preferences, {
+    mode: 'live', apiKey: 'test', fetchImpl: async () => new Response(JSON.stringify({ error: { code: 'rate_limit_exceeded' } }), { status: 429, headers: { 'Retry-After': '20' } }),
+  }), error => error.code === 'rate_limit_exceeded' && /20 seconds/.test(error.message));
+  await assert.rejects(generateRecommendations(preferences, {
+    mode: 'live', apiKey: 'test', fetchImpl: async () => new Response('private unknown details', { status: 429 }),
+  }), error => error.code === 'provider_limit_unknown' && !/private/.test(error.message));
+});
