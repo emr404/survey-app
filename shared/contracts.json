@@ -21,8 +21,7 @@
       },
       "travellers": {
         "type": "integer",
-        "minimum": 1,
-        "maximum": 10
+        "minimum": 1
       },
       "days": {
         "type": "integer",
@@ -113,6 +112,27 @@
       "constraints": {
         "type": "string",
         "maxLength": 1500
+      },
+      "passportCountries": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "minItems": 0,
+        "maxItems": 10
+      },
+      "residenceCountry": {
+        "type": "string",
+        "pattern": "^(|[A-Z]{2})$",
+        "maxLength": 2
+      },
+      "passportType": {
+        "type": "string",
+        "enum": [
+          "ordinary",
+          "other"
+        ]
       }
     },
     "required": [
@@ -130,7 +150,10 @@
       "transport",
       "maxJourneyHours",
       "crowds",
-      "constraints"
+      "constraints",
+      "passportCountries",
+      "residenceCountry",
+      "passportType"
     ],
     "additionalProperties": false
   },
@@ -232,6 +255,39 @@
         "type": "string",
         "minLength": 1,
         "maxLength": 500
+      },
+      "visaAdvice": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "passportCountry": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "visa_may_be_required",
+                "visa_exemption_may_apply",
+                "check_required"
+              ]
+            },
+            "note": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "passportCountry",
+            "status",
+            "note"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 0,
+        "maxItems": 10
       }
     },
     "required": [
@@ -246,7 +302,8 @@
       "journeyHours",
       "journeyNote",
       "seasonNote",
-      "crowdNote"
+      "crowdNote",
+      "visaAdvice"
     ],
     "additionalProperties": false
   },
@@ -368,6 +425,39 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 500
+            },
+            "visaAdvice": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "passportCountry": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}$"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "visa_may_be_required",
+                      "visa_exemption_may_apply",
+                      "check_required"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "passportCountry",
+                  "status",
+                  "note"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 10
             }
           },
           "required": [
@@ -382,7 +472,8 @@
             "journeyHours",
             "journeyNote",
             "seasonNote",
-            "crowdNote"
+            "crowdNote",
+            "visaAdvice"
           ],
           "additionalProperties": false
         },
@@ -405,174 +496,6 @@
       "conflicts",
       "destinations",
       "notes"
-    ],
-    "additionalProperties": false
-  },
-  "activity": {
-    "type": "object",
-    "properties": {
-      "id": {
-        "type": "string",
-        "pattern": "^[a-z0-9-]{1,70}$"
-      },
-      "title": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 100
-      },
-      "description": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 600
-      },
-      "durationMinutes": {
-        "type": "integer",
-        "minimum": 15,
-        "maximum": 720
-      },
-      "cost": {
-        "type": "object",
-        "properties": {
-          "low": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 10000
-          },
-          "high": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 10000
-          }
-        },
-        "required": [
-          "low",
-          "high"
-        ],
-        "additionalProperties": false
-      }
-    },
-    "required": [
-      "id",
-      "title",
-      "description",
-      "durationMinutes",
-      "cost"
-    ],
-    "additionalProperties": false
-  },
-  "itinerary": {
-    "type": "object",
-    "properties": {
-      "days": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "day": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "activities": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "pattern": "^[a-z0-9-]{1,70}$"
-                  },
-                  "title": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 100
-                  },
-                  "description": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 600
-                  },
-                  "durationMinutes": {
-                    "type": "integer",
-                    "minimum": 15,
-                    "maximum": 720
-                  },
-                  "cost": {
-                    "type": "object",
-                    "properties": {
-                      "low": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 10000
-                      },
-                      "high": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 10000
-                      }
-                    },
-                    "required": [
-                      "low",
-                      "high"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "required": [
-                  "id",
-                  "title",
-                  "description",
-                  "durationMinutes",
-                  "cost"
-                ],
-                "additionalProperties": false
-              },
-              "minItems": 0,
-              "maxItems": 4
-            }
-          },
-          "required": [
-            "day",
-            "activities"
-          ],
-          "additionalProperties": false
-        },
-        "minItems": 1
-      },
-      "baseDailyCost": {
-        "type": "object",
-        "properties": {
-          "low": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 10000
-          },
-          "high": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 10000
-          }
-        },
-        "required": [
-          "low",
-          "high"
-        ],
-        "additionalProperties": false
-      },
-      "assumptions": {
-        "type": "array",
-        "items": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
-        },
-        "minItems": 1,
-        "maxItems": 6
-      }
-    },
-    "required": [
-      "days",
-      "baseDailyCost",
-      "assumptions"
     ],
     "additionalProperties": false
   }

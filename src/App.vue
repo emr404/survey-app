@@ -2,8 +2,7 @@
   <TravelBackdrop />
   <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="app-header">
-    <router-link to="/" class="brand"><span class="brand-mark"><BrandMark /></span> Talaria<span class="brand-caption">A plan you make your own.</span></router-link>
-    <span class="pill" v-if="serviceStatus.checked">{{ serviceStatus.mode === 'demo' ? 'Local demo' : serviceStatus.mode === 'live' ? 'AI mode' : 'Offline' }}</span>
+    <router-link to="/" class="brand" aria-label="Talaria home"><span class="brand-mark"><BrandMark /></span></router-link>
   </header>
   <nav class="journey-nav" aria-label="Trip planning stages">
     <ol>
@@ -15,31 +14,27 @@
   </nav>
   <div v-if="!store.state.storageAvailable" class="notice global-notice" role="status">Browser storage is unavailable. Your work lasts only until this page is refreshed.</div>
   <main id="main-content" tabindex="-1"><router-view /></main>
-  <footer class="app-footer"><div class="footer-brand"><BrandMark /><small>© {{ year }} Talaria</small></div></footer>
+  <footer class="app-footer"><small>Talaria © {{ year }}</small><small>Powered by Groq</small></footer>
 </template>
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from '@/store';
-import { serviceStatus, checkService } from '@/services/recommendations';
 import TravelBackdrop from '@/components/TravelBackdrop.vue';
 import BrandMark from '@/components/BrandMark.vue';
 const store = useStore();
 const route = useRoute();
 const year = new Date().getFullYear();
-const activeStage = computed(() => route.path === '/' || route.path === '/preview' ? 0 : route.path === '/compare' ? 2 : route.path === '/itinerary' ? 3 : 1);
+const activeStage = computed(() => route.path === '/' ? 0 : 1);
 const stages = computed(() => [
   { path: '/', label: 'Your trip', available: true },
-  { path: '/results', label: 'Discover', available: !!store.state.batch },
-  { path: '/compare', label: 'Compare', available: store.state.compareIds.length >= 2 },
-  { path: '/itinerary', label: 'Your plan', available: !!store.state.itinerary },
+  { path: '/results', label: 'Recommendations', available: !!store.state.batch },
 ]);
 function pointerInput() { document.documentElement.dataset.inputMethod = 'pointer'; }
 function keyboardInput(event: KeyboardEvent) {
   if (['Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) document.documentElement.dataset.inputMethod = 'keyboard';
 }
 onMounted(() => {
-  checkService();
   document.addEventListener('pointerdown', pointerInput, true);
   document.addEventListener('keydown', keyboardInput, true);
 });

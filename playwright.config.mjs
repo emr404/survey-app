@@ -11,8 +11,8 @@ export default defineConfig({
     { name: 'mobile', use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
   ],
   webServer: [
-    { command: 'node server/index.mjs', url: 'http://127.0.0.1:3011/api/status', timeout: 15000,
-      env: { API_PORT: '3011', API_DISCOVERY: 'off', AI_MODE: 'demo', OPENAI_API_KEY: '' }, reuseExistingServer: false },
+    { command: 'node tests/browser/api.mjs', url: 'http://127.0.0.1:3011/api/status', timeout: 15000,
+      env: { API_PORT: '3011', API_DISCOVERY: 'off' }, reuseExistingServer: false },
     { command: 'npm run serve -- --host 127.0.0.1 --port 8091', url: 'http://127.0.0.1:8091', timeout: 60000,
       env: { TRAVEL_API_PROXY: 'http://127.0.0.1:3011' }, reuseExistingServer: false },
   ],

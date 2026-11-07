@@ -1,24 +1,21 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { defaultPreferences, issuesFor, refinePreferences, describeChanges, samePreferences } = require('../src/domain/preferences.ts');
+const { defaultPreferences, issuesFor, refinePreferences, describeChanges } = require('../src/domain/preferences.ts');
 const { freshState, restoreState, withPreferences } = require('../src/domain/state.ts');
 const { RequestGate } = require('../src/domain/requests.ts');
-const { parseRecommendations, parseItinerary } = require('../src/domain/responses.ts');
-const { createDraft, replaceActivity, removeActivity, moveActivity, approveDraft, isApproved, approvalIssues, estimateTotal } = require('../src/domain/itinerary.ts');
+const { parseRecommendations } = require('../src/domain/responses.ts');
 const p = { ...defaultPreferences(), departure: 'London', days: 2 };
 async function fixture() {
-  const { demoRecommendations, demoItinerary } = await import('../server/demo.mjs');
-  const result = { ...demoRecommendations(p), mode: 'demo' };
-  const destination = result.destinations[0];
-  const itinerary = { ...demoItinerary(p, destination), mode: 'demo' };
-  return { result, destination, itinerary, draft: createDraft(destination, p, itinerary) };
+  const { recommendationFixture } = await import('./fixtures/recommendations.mjs');
+  return { result: { ...recommendationFixture(p), mode: 'groq' } };
 }
 
-test('preferences require departure, interests, valid amounts, dates and bounded group size', () => {
+test('preferences require departure, interests, valid amounts, dates and positive whole group sizes', () => {
   assert.equal(Object.keys(issuesFor(p)).length, 0);
   assert.equal(Object.keys(issuesFor({ ...p, days: 45 })).length, 0);
+  for (const travellers of [11, 25, 100]) assert.deepEqual(issuesFor({ ...p, travellers }), {});
   for (const patch of [ { departure: '' }, { dailyBudget: 0 }, { dailyBudget: NaN }, { interests: [] },
-    { travellers: 0 }, { days: 0 }, { days: 1.5 }, { currency: 'XYZ' }, { timing: 'dates', startDate: '2028-02-30' }, { constraints: 'x'.repeat(1501) } ]) {
+    { travellers: 0 }, { travellers: 1.5 }, { days: 0 }, { days: 1.5 }, { currency: 'XYZ' }, { timing: 'dates', startDate: '2028-02-30' }, { constraints: 'x'.repeat(1501) } ]) {
     assert.ok(Object.keys(issuesFor({ ...p, ...patch })).length, JSON.stringify(patch));
   }
   assert.equal(Object.keys(issuesFor({ ...p, timing: 'dates', startDate: '2028-02-29' })).length, 0);
@@ -38,9 +35,8 @@ test('refinements preserve the rest of the brief and describe exactly what chang
 });
 
 test('browser and model responses reject invalid ranges, ids, unknown provenance and nested fields', async () => {
-  const { result, itinerary } = await fixture();
+  const { result } = await fixture();
   assert.deepEqual(parseRecommendations(result), result);
-  assert.deepEqual(parseItinerary(itinerary, 2), itinerary);
   const bad = structuredClone(result); bad.destinations[0].dailyCost = { low: 200, high: 100 };
   assert.throws(() => parseRecommendations(bad));
   const ids = structuredClone(result); ids.destinations[1].id = ids.destinations[0].id;
@@ -48,9 +44,6 @@ test('browser and model responses reject invalid ranges, ids, unknown provenance
   const extra = structuredClone(result); extra.destinations[0].verifiedAt = 'invented';
   assert.throws(() => parseRecommendations(extra));
   assert.throws(() => parseRecommendations({ ...result, mode: 'verified' }));
-  assert.throws(() => parseItinerary(itinerary, 3));
-  const nested = structuredClone(itinerary); nested.days[0].activities[0].durationMinutes = -10;
-  assert.throws(() => parseItinerary(nested, 2));
 });
 
 test('empty and partial shortlists are valid rather than padded with weaker matches', async () => {
@@ -59,63 +52,14 @@ test('empty and partial shortlists are valid rather than padded with weaker matc
   assert.equal(parseRecommendations({ ...result, destinations: [result.destinations[0]] }).destinations.length, 1);
 });
 
-test('approval requires explicit confirmation and is tied to the exact revision', async () => {
-  const { draft } = await fixture();
-  const at = '2026-11-07T15:00:00Z';
-  assert.equal(isApproved(draft, p), false);
-  assert.throws(() => approveDraft(draft, p, false, at));
-  const approved = approveDraft(draft, p, true, at);
-  assert.equal(isApproved(approved, p), true);
-  const moved = moveActivity(approved, 0, approved.content.days[0].activities[0].id, 1);
-  assert.equal(moved.revision, 2); assert.equal(moved.approvedRevision, null);
-  assert.equal(isApproved(moved, p), false);
-  assert.equal(isApproved(approved, { ...p, days: 3 }), false);
-  assert.equal(isApproved(approved, p), true, 'Editing a clone must not mutate the previous revision');
-});
-
-test('replace, remove and add activities validate data and invalidate approval', async () => {
-  const { draft } = await fixture();
-  const original = draft.content.days[0].activities[0];
-  const next = replaceActivity(draft, 0, { ...original, title: 'My own walking route' });
-  assert.equal(next.content.days[0].activities[0].title, 'My own walking route');
-  assert.equal(next.revision, 2);
-  assert.throws(() => replaceActivity(next, 0, { ...original, cost: { low: 20, high: 10 } }));
-  let empty = next;
-  for (const activity of next.content.days[0].activities) empty = removeActivity(empty, 0, activity.id);
-  assert.match(approvalIssues(empty, p).join(' '), /at least one/);
-  assert.throws(() => approveDraft(empty, p, true, new Date().toISOString()));
-  const restored = replaceActivity(empty, 0, { ...original, id: 'new-activity' });
-  assert.equal(approvalIssues(restored, p).length, 0);
-});
-
-test('cost totals count base costs once and activity estimates separately', async () => {
-  const { draft } = await fixture();
-  draft.content.baseDailyCost = { low: 50, high: 80 };
-  draft.content.days.forEach(day => day.activities.forEach(activity => { activity.cost = { low: 5, high: 10 }; }));
-  assert.deepEqual(estimateTotal(draft), { low: 120, high: 200 });
-});
-
-test('preference edits invalidate approved plans even if the brief is later restored', async () => {
-  const { draft } = await fixture();
-  const state = freshState(); state.preferences = p; state.itinerary = approveDraft(draft, p, true, new Date().toISOString());
-  withPreferences(state, { ...p, crowds: 'Quieter places' });
-  assert.equal(state.itinerary.approvedRevision, null);
-  withPreferences(state, p);
-  assert.equal(isApproved(state.itinerary, p), false);
-});
-
-test('saved results, comparison, edits and approval survive valid restoration; corrupt data does not', async () => {
-  const { result, draft } = await fixture();
-  const approved = approveDraft(draft, p, true, new Date().toISOString());
-  const saved = { version: 2, preferences: p, batch: { preferences: p, result }, compareIds: [result.destinations[0].id, 'missing'], itinerary: approved, history: [] };
+test('saved preferences and Groq results restore; corrupt saves do not', async () => {
+  const { result } = await fixture();
+  const saved = { version: 2, preferences: p, batch: { preferences: p, result }, history: [] };
   const restored = restoreState(JSON.stringify(saved));
-  assert.ok(samePreferences(restored.preferences, p));
-  assert.equal(restored.batch.result.destinations.length, result.destinations.length);
-  assert.deepEqual(restored.compareIds, [result.destinations[0].id]);
-  assert.equal(isApproved(restored.itinerary, p), true);
-  assert.equal(restoreState('{broken').batch, null);
-  saved.itinerary.content.days[0].activities[0].title = null;
-  assert.equal(restoreState(JSON.stringify(saved)).itinerary, null);
+  assert.deepEqual(restored.preferences, p); assert.deepEqual(restored.batch.result, result);
+  assert.deepEqual(restoreState('{broken'), freshState());
+  saved.batch.result.destinations[0].dailyCost = { low: 200, high: 100 };
+  assert.equal(restoreState(JSON.stringify(saved)).batch, null);
 });
 
 test('old survey saves retain useful preferences without trusting old question lists', () => {
@@ -147,4 +91,60 @@ test('cancelled and superseded responses cannot overwrite newer work', () => {
   assert.equal(first.signal.aborted, true); assert.equal(gate.current(first.id), false);
   assert.equal(gate.current(second.id), true);
   gate.cancel(); assert.equal(second.signal.aborted, true); assert.equal(gate.current(second.id), false);
+});
+
+test('Groq recommendations survive validation and saved-state restoration', async () => {
+  const { result } = await fixture();
+  const generated = { ...result, mode: 'groq' };
+  assert.equal(parseRecommendations(generated).mode, 'groq');
+  const restored = restoreState(JSON.stringify({ version: 2, preferences: p, batch: { preferences: p, result: generated }, compareIds: ['old-selection'] }));
+  assert.deepEqual(restored.batch.result, generated);
+  assert.equal('compareIds' in restored, false);
+});
+
+test('passport preferences validate known, unique nationalities and survive refinement', () => {
+  const selected = { ...p, passportCountries: ['GB', 'IN'], residenceCountry: 'FR', passportType: 'ordinary' };
+  assert.deepEqual(issuesFor(selected), {});
+  assert.ok(issuesFor({ ...selected, passportCountries: ['GB', 'GB'] }).passportCountries);
+  assert.ok(issuesFor({ ...selected, passportCountries: ['ZZ'] }).passportCountries);
+  assert.ok(issuesFor({ ...selected, residenceCountry: 'ZZ' }).residenceCountry);
+  assert.ok(issuesFor({ ...selected, passportType: 'invalid' }).passportType);
+  assert.deepEqual(refinePreferences(selected, 'budget').passportCountries, ['GB', 'IN']);
+  assert.equal(refinePreferences(selected, 'quieter').residenceCountry, 'FR');
+  assert.deepEqual(describeChanges(p, selected).slice(0, 2), ['Passport nationalities: None → United Kingdom, India', 'Country of residence: Not specified → France']);
+});
+
+test('visa advice must correspond to every selected passport, with no invented confirmation fields', async () => {
+  const { result } = await fixture();
+  const preferences = { ...p, passportCountries: ['IN'] };
+  const updated = { ...result, destinations: result.destinations.map(d => ({ ...d, visaAdvice: [{ passportCountry: 'IN', status: 'check_required', note: 'Check entry rules for this passport and your stay.' }] })) };
+  assert.equal(parseRecommendations(updated, preferences).destinations[0].visaAdvice[0].passportCountry, 'IN');
+  assert.throws(() => parseRecommendations(updated, { ...preferences, passportCountries: ['GB'] }), /validation/);
+  const bad = JSON.parse(JSON.stringify(updated));
+  bad.destinations[0].visaAdvice[0].verifiedAt = 'invented'; assert.throws(() => parseRecommendations(bad, preferences), /validation/);
+  delete bad.destinations[0].visaAdvice[0].verifiedAt;
+  bad.destinations[0].visaAdvice[0].status = 'visa_exemption_may_apply';
+  assert.throws(() => parseRecommendations(bad, { ...preferences, passportType: 'other' }), /validation/);
+  bad.destinations[0].visaAdvice[0].status = 'visa_free'; assert.throws(() => parseRecommendations(bad, preferences), /validation/);
+});
+
+test('older Groq saves retain preferences and recommendations when passport fields are absent', async () => {
+  const { result } = await fixture();
+  const oldPreferences = { ...p }; delete oldPreferences.passportCountries; delete oldPreferences.residenceCountry; delete oldPreferences.passportType;
+  const oldResult = JSON.parse(JSON.stringify(result)); oldResult.destinations.forEach(d => { delete d.visaAdvice; });
+  const restored = restoreState(JSON.stringify({ version: 2, preferences: oldPreferences, batch: { preferences: oldPreferences, result: oldResult } }));
+  assert.equal(restored.preferences.departure, p.departure); assert.deepEqual(restored.preferences.passportCountries, []);
+  assert.equal(restored.batch.result.destinations.length, result.destinations.length);
+  assert.deepEqual(restored.batch.result.destinations[0].visaAdvice, []);
+  withPreferences(restored, { ...restored.preferences, passportCountries: ['IN'] });
+  assert.deepEqual(restored.preferences.passportCountries, ['IN']);
+});
+
+test('invalid amounts return field-specific errors rather than a generic form error', () => {
+  const errors = issuesFor({ ...p, days: 0, travellers: 0, dailyBudget: 10001, departure: '' });
+  assert.match(errors.days, /positive whole number/);
+  assert.match(errors.travellers, /positive whole number/);
+  assert.match(errors.dailyBudget, /10,000/);
+  assert.match(errors.departure, /departure city/);
+  assert.equal(errors.form, undefined);
 });

@@ -34,7 +34,7 @@ export async function startTravelApi({ port = 3001, runtimeFile, options = {}, r
       } catch { /* Another process may now own the discovery file. */ }
     });
   }
-  report(`Travel API (${options.mode === 'live' ? 'live' : 'demo'}) listening at http://127.0.0.1:${actualPort}`);
+  report(`Travel API (Groq) listening at http://127.0.0.1:${actualPort}`);
   if (runtimeFile) report('The frontend proxy follows this port automatically.');
   return server;
 }

@@ -1,49 +1,27 @@
 # Talaria
 
-A travel planner inspired by Hermes, with a Greek-inspired T mark. Compare destinations, edit the itinerary and approve your final plan.
-
-Built with Vue 3, TypeScript, Vuex and a small Node API.
+Set travel preferences, get explained destination recommendations, refine your search and explore destination details.
 
 ## Run
 
 Requires Node 22.9+.
 
-```sh
-npm ci
-npm run api
-```
+1. Run `npm ci`.
+2. Copy `.env.example` to `.env.local` and add your [Groq key](https://console.groq.com/keys).
+3. Run `npm run api` and `npm run serve` in separate terminals.
+4. Open http://localhost:8080. Restart the API after configuration changes.
 
-In another terminal:
+## Notes
 
-```sh
-npm run serve
-```
-
-Open http://localhost:8080, or the URL printed in the terminal.
-
-If API port 3001 is busy, a free port is chosen automatically. The frontend follows it; restart `npm run serve` once after this update.
-
-The default demo needs no API key. Try London, Europe, three days and a daily budget of 120 GBP.
-
-## AI and data
-
-The demo uses labelled sample destinations and estimates. It cannot interpret free-text constraints. Nothing is checked against live travel data or booked.
-
-To use the existing OpenAI integration, copy `.env.example` to `.env.local`, set `AI_MODE=live` and add your server-side `OPENAI_API_KEY`. Restart the API. Live requests can incur API charges; their output is still unverified.
-
-Your preferences, results, edits and approval are saved in this browser. Budgets are per person, excluding travel to the destination. Changing the plan requires a new approval.
-
-Trip length accepts positive whole days, with no 14-day cap. Longer live itineraries are generated in sections; these can take longer and use more API calls.
+- Vue 3, TypeScript, Vuex and a Node API. Groq is the only AI provider. Its free plan has request limits.
+- The `openai/gpt-oss-20b` model runs on Groq. Keys stay on the server. Responses are validated; requests support cancellation and retry.
+- Costs, journey times and passport-specific visa guidance are preliminary, without live travel or entry-rule checks. Budgets are per person and exclude travel to the destination. No booking or payment.
+- Photos come from Wikimedia with attribution. Images can be unavailable.
+- Preferences and Groq recommendations are saved in this browser.
+- GFS Neohellenic is self-hosted, with its OFL licence in `src/assets/fonts`.
 
 ## Checks
 
-```sh
-npm run typecheck
-npm test
-npm run build
-npm run test:e2e
-```
+`npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run test:e2e`.
 
-Browser tests use installed Chrome and local demo servers. No paid calls are made.
-
-[Project notes](docs/portfolio.md)
+Tests use a mocked Groq transport and test-only fixtures. Browser checks cover mobile and desktop. No model requests are made by automated tests.

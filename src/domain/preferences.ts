@@ -1,7 +1,9 @@
 import { Preferences, Currency } from './types';
+import { countries } from '../../shared/countries';
 import { preferenceIssues, matches, contracts } from '../../shared/validation';
 
 export const defaultPreferences = (): Preferences => ({
+  passportCountries: [], residenceCountry: '', passportType: 'ordinary',
   departure: '', currency: 'GBP', dailyBudget: 120, travellers: 2, days: 5,
   timing: 'flexible', startDate: '', season: 'Any season', region: 'Anywhere',
   interests: ['Culture', 'Food'], pace: 'Balanced', transport: 'Any transport',
@@ -25,15 +27,24 @@ export const samePreferences = (a: Preferences, b: Preferences): boolean =>
 export const money = (value: number, currency: Currency): string => new Intl.NumberFormat('en-GB', {
   style: 'currency', currency, maximumFractionDigits: 0,
 }).format(value);
+export const countLabel = (count: number, unit: 'hour' | 'day' | 'traveller' | 'destination'): string =>
+  `${count} ${unit}${count === 1 ? '' : 's'}`;
 export const rangeLabel = (low: number, high: number, currency: Currency): string => `${money(low, currency)}–${money(high, currency)}`;
 export const preferenceLabels: Record<keyof Preferences, string> = {
+  passportCountries: 'Passport nationalities', residenceCountry: 'Country of residence', passportType: 'Travel document',
   departure: 'Departure', currency: 'Currency', dailyBudget: 'Daily budget per person', travellers: 'Travellers',
   days: 'Trip length', timing: 'Date flexibility', startDate: 'Departure date', season: 'Season',
   region: 'Region', interests: 'Interests', pace: 'Pace', transport: 'Transport', maxJourneyHours: 'Maximum one-way journey (hours)',
   crowds: 'Crowds', constraints: 'Travel constraints',
 };
 function display(value: unknown): string {
-  if (Array.isArray(value)) return value.join(', ') || 'None';
+  if (typeof value === 'string') {
+    const country = countries.find(country => country.code === value);
+    if (country) return country.name;
+    if (value === 'ordinary') return 'Ordinary passport';
+    if (value === 'other') return 'Other travel document';
+  }
+  if (Array.isArray(value)) return value.map(display).join(', ') || 'None';
   return value === null || value === '' ? 'Not specified' : String(value);
 }
 export const describeChanges = (before: Preferences, after: Preferences): string[] =>

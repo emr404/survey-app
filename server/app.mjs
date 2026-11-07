@@ -1,9 +1,12 @@
+import { destinationPhoto } from './photos.mjs';
 import { createServer } from 'node:http';
-import { TravelError, validateTrip, generateRecommendations, generateItinerary } from './recommendations.mjs';
+import { TravelError, validateTrip, generateRecommendations } from './recommendations.mjs';
 
 export function createTravelServer(options = {}) {
   const attempts = new Map();
   let active = 0;
+  let activePhotos = 0;
+  const photoAttempts = new Map();
   return createServer(async (request, response) => {
     response.setHeader('Content-Type', 'application/json');
     response.setHeader('Cache-Control', 'no-store');
@@ -12,10 +15,22 @@ export function createTravelServer(options = {}) {
       if (response.destroyed || response.writableEnded) return;
       response.writeHead(status); response.end(JSON.stringify(data));
     };
-    if (request.url === '/api/status' && request.method === 'GET') {
-      return send(200, { mode: options.mode === 'live' ? 'live' : 'demo', available: options.mode !== 'live' || !!options.apiKey });
+    const url = new URL(request.url, 'http://localhost');
+    if (url.pathname === '/api/destination-photo' && request.method === 'GET') {
+      const now = Date.now();
+      for (const [ip, entry] of photoAttempts) if (entry.expires <= now) photoAttempts.delete(ip);
+      const ip = request.socket.remoteAddress;
+      const entry = photoAttempts.get(ip) || { count: 0, expires: now + 60000 };
+      photoAttempts.set(ip, entry);
+      if (++entry.count > 40 || activePhotos >= 6) return send(200, { photo: null });
+      activePhotos++;
+      try { return send(200, { photo: await destinationPhoto(url.searchParams.get('name'), url.searchParams.get('country'), options.photoFetchImpl) }); }
+      finally { activePhotos--; }
     }
-    if (!['/api/recommendations', '/api/itinerary'].includes(request.url)) return send(404, { error: 'Not found.' });
+    if (request.url === '/api/status' && request.method === 'GET') {
+      return send(200, { mode: 'groq', available: !!options.groqKey, ...(!options.groqKey ? { error: 'Add GROQ_API_KEY to .env.local and restart the API.' } : {}) });
+    }
+    if (request.url !== '/api/recommendations') return send(404, { error: 'Not found.' });
     if (request.method !== 'POST') { response.setHeader('Allow', 'POST'); return send(405, { error: 'Use POST for this request.' }); }
     if (request.headers['content-type']?.split(';')[0].trim() !== 'application/json') return send(415, { error: 'Send your preferences as JSON.' });
     const controller = new AbortController();
@@ -44,9 +59,7 @@ export function createTravelServer(options = {}) {
       if (active >= 3) throw new TravelError(429, 'Please wait a minute before requesting more ideas.');
       active++;
       try {
-        const result = request.url === '/api/itinerary'
-          ? await generateItinerary(preferences, value.destination, options, controller.signal)
-          : await generateRecommendations(preferences, options, controller.signal);
+        const result = await generateRecommendations(preferences, options, controller.signal);
         send(200, result);
       } finally { active--; }
     } catch (error) {

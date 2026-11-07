@@ -17,12 +17,12 @@ test('occupied API port selects a free port and the frontend discovers it withou
   let api;
   try {
     const messages = [];
-    api = await startTravelApi({ port: busyPort, runtimeFile, options: { mode: 'demo' }, report: message => messages.push(message) });
+    api = await startTravelApi({ port: busyPort, runtimeFile, options: { groqKey: 'test-only' }, report: message => messages.push(message) });
     const target = proxy.resolveApiTarget(runtimeFile);
     assert.notEqual(api.address().port, busyPort);
     assert.equal(JSON.parse(readFileSync(runtimeFile, 'utf8')).port, api.address().port);
     assert.equal(target, `http://127.0.0.1:${api.address().port}`);
-    assert.equal((await (await fetch(target + '/api/status')).json()).mode, 'demo');
+    assert.equal((await (await fetch(target + '/api/status')).json()).mode, 'groq');
     assert.equal(await (await fetch(`http://127.0.0.1:${busyPort}`)).text(), 'Existing service');
     assert.ok(messages.some(message => message.includes('already in use')));
     assert.equal(proxy.resolveApiTarget(runtimeFile, 'http://127.0.0.1:3011'), 'http://127.0.0.1:3011');

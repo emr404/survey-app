@@ -1,5 +1,6 @@
 // Shared by the browser and Node. No network claims or external validation dependency.
 const contracts = require('./contracts.json');
+const { countryCodes } = require('./countries.js');
 
 function matches(value, schema) {
   if (schema.anyOf) return schema.anyOf.some(option => matches(value, option));
@@ -21,31 +22,50 @@ function matches(value, schema) {
 
 /** @returns {Record<string, string>} */
 function preferenceIssues(value) {
-  if (!matches(value, contracts.preferences)) return { form: 'Please check your entries. Use a daily budget up to 10,000, 1–10 travellers and a positive whole number of days.' };
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return { form: 'Please check your trip details.' };
   const errors = {};
-  if (value.departure.trim().length < 2) errors.departure = 'Enter a departure city or airport.';
-  if (value.dailyBudget < 1) errors.dailyBudget = 'Enter a daily budget greater than zero.';
-  if (!value.interests.length) errors.interests = 'Choose at least one interest.';
-  if (new Set(value.interests).size !== value.interests.length) errors.interests = 'Choose each interest only once.';
-  if (value.timing === 'dates') {
+  const messages = {
+    departure: 'Enter a departure city or airport.',
+    dailyBudget: 'Enter a daily budget greater than zero and no more than 10,000.',
+    days: 'Enter a positive whole number of days.',
+    travellers: 'Enter a positive whole number of travellers.',
+    currency: 'Choose a currency from the list.', timing: 'Choose your date flexibility.',
+    startDate: 'Choose a valid departure date.', season: 'Choose a season from the list.',
+    region: 'Choose a region from the list.', interests: 'Choose at least one interest.',
+    pace: 'Choose a pace from the list.', transport: 'Choose a transport option from the list.',
+    maxJourneyHours: 'Choose a journey limit from 1 to 24 hours, or no limit.',
+    crowds: 'Choose a crowd preference from the list.', constraints: 'Keep travel notes within 1,500 characters.',
+    passportCountries: 'Choose each passport nationality once from the list.',
+    residenceCountry: 'Choose a country of residence from the list.', passportType: 'Choose a travel document from the list.',
+  };
+  for (const key of contracts.preferences.required) {
+    if (!matches(value[key], contracts.preferences.properties[key])) errors[key] = messages[key];
+  }
+  if (Object.keys(value).some(key => !Object.hasOwn(contracts.preferences.properties, key))) errors.form = 'Please check your trip details.';
+  if (!errors.passportCountries && (value.passportCountries.some(code => !countryCodes.includes(code)) || new Set(value.passportCountries).size !== value.passportCountries.length)) errors.passportCountries = messages.passportCountries;
+  if (!errors.residenceCountry && value.residenceCountry && !countryCodes.includes(value.residenceCountry)) errors.residenceCountry = messages.residenceCountry;
+  if (!errors.departure && value.departure.trim().length < 2) errors.departure = messages.departure;
+  if (!errors.dailyBudget && value.dailyBudget < 1) errors.dailyBudget = messages.dailyBudget;
+  if (!errors.interests && !value.interests.length) errors.interests = messages.interests;
+  if (!errors.interests && new Set(value.interests).size !== value.interests.length) errors.interests = 'Choose each interest only once.';
+  if (!errors.startDate && value.timing === 'dates') {
     const date = new Date(value.startDate + 'T00:00:00Z');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value.startDate) || !Number.isFinite(date.getTime()) ||
-      date.toISOString().slice(0, 10) !== value.startDate) errors.startDate = 'Choose a valid departure date.';
+      date.toISOString().slice(0, 10) !== value.startDate) errors.startDate = messages.startDate;
   }
   return errors;
 }
 
 function validRange(range) { return range.low <= range.high; }
-function validDestination(value) { return matches(value, contracts.destination) && validRange(value.dailyCost); }
+function validDestination(value) { return matches(value, contracts.destination) && validRange(value.dailyCost) &&
+  value.visaAdvice.every(advice => countryCodes.includes(advice.passportCountry)) &&
+  new Set(value.visaAdvice.map(advice => advice.passportCountry)).size === value.visaAdvice.length; }
+function visaAdviceMatchesPreferences(advice, preferences) {
+  return advice.length === preferences.passportCountries.length && advice.every(item =>
+    preferences.passportCountries.includes(item.passportCountry) && (preferences.passportType === 'ordinary' || item.status === 'check_required'));
+}
 function validRecommendations(value) {
   return matches(value, contracts.recommendations) && value.destinations.every(validDestination) &&
     new Set(value.destinations.map(d => d.id)).size === value.destinations.length;
 }
-function validItinerary(value, days) {
-  return matches(value, contracts.itinerary) && validRange(value.baseDailyCost) &&
-    (days === undefined || value.days.length === days) && value.days.every((day, i) => day.day === i + 1 &&
-      day.activities.every(activity => validRange(activity.cost))) &&
-    new Set(value.days.flatMap(day => day.activities.map(activity => activity.id))).size ===
-      value.days.reduce((sum, day) => sum + day.activities.length, 0);
-}
-module.exports = { contracts, matches, preferenceIssues, validDestination, validRecommendations, validItinerary };
+module.exports = { visaAdviceMatchesPreferences, contracts, matches, preferenceIssues, validDestination, validRecommendations };
