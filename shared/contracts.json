@@ -1,0 +1,579 @@
+{
+  "preferences": {
+    "type": "object",
+    "properties": {
+      "departure": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "currency": {
+        "type": "string",
+        "enum": [
+          "GBP",
+          "EUR",
+          "USD"
+        ]
+      },
+      "dailyBudget": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 10000
+      },
+      "travellers": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "days": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "timing": {
+        "type": "string",
+        "enum": [
+          "flexible",
+          "dates"
+        ]
+      },
+      "startDate": {
+        "type": "string",
+        "maxLength": 10
+      },
+      "season": {
+        "type": "string",
+        "enum": [
+          "Any season",
+          "Spring",
+          "Summer",
+          "Autumn",
+          "Winter"
+        ]
+      },
+      "region": {
+        "type": "string",
+        "enum": [
+          "Anywhere",
+          "Europe",
+          "Asia",
+          "Africa",
+          "South America"
+        ]
+      },
+      "interests": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "Coast",
+            "Culture",
+            "Food",
+            "Nature",
+            "Adventure",
+            "Cities"
+          ]
+        },
+        "minItems": 0,
+        "maxItems": 6
+      },
+      "pace": {
+        "type": "string",
+        "enum": [
+          "Relaxed",
+          "Balanced",
+          "Active"
+        ]
+      },
+      "transport": {
+        "type": "string",
+        "enum": [
+          "Any transport",
+          "Flight",
+          "Train"
+        ]
+      },
+      "maxJourneyHours": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 24
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "crowds": {
+        "type": "string",
+        "enum": [
+          "No preference",
+          "Quieter places"
+        ]
+      },
+      "constraints": {
+        "type": "string",
+        "maxLength": 1500
+      }
+    },
+    "required": [
+      "departure",
+      "currency",
+      "dailyBudget",
+      "travellers",
+      "days",
+      "timing",
+      "startDate",
+      "season",
+      "region",
+      "interests",
+      "pace",
+      "transport",
+      "maxJourneyHours",
+      "crowds",
+      "constraints"
+    ],
+    "additionalProperties": false
+  },
+  "destination": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]{1,70}$"
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "country": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "matchReasons": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "minItems": 2,
+        "maxItems": 4
+      },
+      "tradeoffs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "minItems": 1,
+        "maxItems": 3
+      },
+      "highlights": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "minItems": 2,
+        "maxItems": 4
+      },
+      "dailyCost": {
+        "type": "object",
+        "properties": {
+          "low": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "high": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "low",
+          "high"
+        ],
+        "additionalProperties": false
+      },
+      "costNote": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      },
+      "journeyHours": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "journeyNote": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      },
+      "seasonNote": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      },
+      "crowdNote": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "country",
+      "matchReasons",
+      "tradeoffs",
+      "highlights",
+      "dailyCost",
+      "costNote",
+      "journeyHours",
+      "journeyNote",
+      "seasonNote",
+      "crowdNote"
+    ],
+    "additionalProperties": false
+  },
+  "recommendations": {
+    "type": "object",
+    "properties": {
+      "summary": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 900
+      },
+      "conflicts": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "minItems": 0,
+        "maxItems": 5
+      },
+      "destinations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,70}$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "country": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "matchReasons": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "minItems": 2,
+              "maxItems": 4
+            },
+            "tradeoffs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "minItems": 1,
+              "maxItems": 3
+            },
+            "highlights": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "minItems": 2,
+              "maxItems": 4
+            },
+            "dailyCost": {
+              "type": "object",
+              "properties": {
+                "low": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "high": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000
+                }
+              },
+              "required": [
+                "low",
+                "high"
+              ],
+              "additionalProperties": false
+            },
+            "costNote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "journeyHours": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "journeyNote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "seasonNote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "crowdNote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "country",
+            "matchReasons",
+            "tradeoffs",
+            "highlights",
+            "dailyCost",
+            "costNote",
+            "journeyHours",
+            "journeyNote",
+            "seasonNote",
+            "crowdNote"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 0,
+        "maxItems": 3
+      },
+      "notes": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "minItems": 1,
+        "maxItems": 5
+      }
+    },
+    "required": [
+      "summary",
+      "conflicts",
+      "destinations",
+      "notes"
+    ],
+    "additionalProperties": false
+  },
+  "activity": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]{1,70}$"
+      },
+      "title": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "description": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 600
+      },
+      "durationMinutes": {
+        "type": "integer",
+        "minimum": 15,
+        "maximum": 720
+      },
+      "cost": {
+        "type": "object",
+        "properties": {
+          "low": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "high": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "low",
+          "high"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "description",
+      "durationMinutes",
+      "cost"
+    ],
+    "additionalProperties": false
+  },
+  "itinerary": {
+    "type": "object",
+    "properties": {
+      "days": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "day": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "activities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]{1,70}$"
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 600
+                  },
+                  "durationMinutes": {
+                    "type": "integer",
+                    "minimum": 15,
+                    "maximum": 720
+                  },
+                  "cost": {
+                    "type": "object",
+                    "properties": {
+                      "low": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "high": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    },
+                    "required": [
+                      "low",
+                      "high"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "title",
+                  "description",
+                  "durationMinutes",
+                  "cost"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 4
+            }
+          },
+          "required": [
+            "day",
+            "activities"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 1
+      },
+      "baseDailyCost": {
+        "type": "object",
+        "properties": {
+          "low": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "high": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "low",
+          "high"
+        ],
+        "additionalProperties": false
+      },
+      "assumptions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "minItems": 1,
+        "maxItems": 6
+      }
+    },
+    "required": [
+      "days",
+      "baseDailyCost",
+      "assumptions"
+    ],
+    "additionalProperties": false
+  }
+}

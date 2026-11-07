@@ -1,29 +1,16 @@
-import { createRouter, createWebHistory } from "vue-router";
-import SurveyPage from "@/pages/SurveyPage.vue";
-import SuccessPage from "@/pages/SuccessPage.vue";
-import PreviewAnswers from "@/pages/PreviewAnswers.vue";
+import { createRouter, createWebHistory } from 'vue-router';
+import SurveyPage from '@/pages/SurveyPage.vue';
 
-const routes = [
-    {
-        path: "/",
-        name: "SurveyPage",
-        component: SurveyPage,
-    },
-    {
-        path: "/success",
-        name: "SuccessPage",
-        component: SuccessPage,
-    },
-    {
-        path: "/preview",
-        name: "PreviewAnswers",
-        component: PreviewAnswers,
-    },
-];
-
-const router = createRouter({
-    history: createWebHistory(),
-    routes,
+export default createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: '/', name: 'SurveyPage', component: SurveyPage },
+    { path: '/preview', name: 'PreviewAnswers', component: () => import('@/pages/PreviewAnswers.vue') },
+    { path: '/results', alias: '/success', name: 'SuccessPage', component: () => import('@/pages/SuccessPage.vue') },
+    { path: '/compare', component: () => import('@/pages/ComparePage.vue') },
+    { path: '/destination/:id', component: () => import('@/pages/DestinationPage.vue') },
+    { path: '/itinerary', component: () => import('@/pages/ItineraryPage.vue') },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
+  ],
+  scrollBehavior(_to, _from, saved) { return saved || { top: 0 }; },
 });
-
-export default router;

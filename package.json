@@ -4,8 +4,17 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
+    "api": "node --env-file-if-exists=.env.local server/index.mjs",
+    "test:api": "node --test server/*.test.mjs",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "typecheck": "tsc --noEmit",
+    "test:domain": "node --require ./scripts/register-typescript.cjs --test tests/domain.test.cjs",
+    "test:e2e": "playwright test",
+    "test": "npm run test:domain && npm run test:api"
+  },
+  "engines": {
+    "node": ">=22.9.0"
   },
   "dependencies": {
     "@vue/compiler-sfc": "^3.5.13",
@@ -18,6 +27,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
+    "@playwright/test": "^1.65.0",
     "@types/vue-router": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
@@ -36,7 +46,8 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "vue/setup-compiler-macros": true
     },
     "extends": [
       "plugin:vue/vue3-essential",
@@ -46,7 +57,15 @@
     "parserOptions": {
       "parser": "@typescript-eslint/parser"
     },
-    "rules": {}
+    "rules": {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    }
   },
   "browserslist": [
     "> 1%",

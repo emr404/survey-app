@@ -1,46 +1,49 @@
-# Survey Application
+# Talaria
 
-## Overview
-The Survey Application is a dynamic web application built using **Vue 3** that allows users to participate in a 
-survey about their travel preferences. The application features a user-friendly interface, 
-responsive design and state management using Vuex.
+A travel planner inspired by Hermes, with a Greek-inspired T mark. Compare destinations, edit the itinerary and approve your final plan.
 
-## Features
-- **Dynamic Question Display**: Users can navigate through a series of questions with multiple-choice options.
-- **State Management**: Utilizes Vuex for managing the current question index and user responses.
-- **Responsive Design**: Built with **Tailwind CSS** to ensure a seamless experience across devices.
-- **Routing**: Implements **Vue Router** to navigate between the survey and a success page upon submission.
-- **User Feedback**: Displays a thank you message on successful submission.
+Built with Vue 3, TypeScript, Vuex and a small Node API.
 
-## Technologies Used
-- **Vue 3**
-- **Vue Router**
-- **Vuex**
-- **Tailwind CSS**
-- **TypeScript**
+## Run
 
-## Installation
+Requires Node 22.9+.
 
-To run the application locally, follow these steps:
+```sh
+npm ci
+npm run api
+```
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/emr404/survey-app.git
-   ```
+In another terminal:
 
-2. **Navigate to the project directory**:
-   ```bash
-   cd survey-app
-   ```
+```sh
+npm run serve
+```
 
-3. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+Open http://localhost:8080, or the URL printed in the terminal.
 
-4. **Run the application**:
-   ```bash
-   npm run serve
-   ```
+If API port 3001 is busy, a free port is chosen automatically. The frontend follows it; restart `npm run serve` once after this update.
 
-5. **Open your browser** and navigate to `http://localhost:8080` (or the port specified in the terminal).
+The default demo needs no API key. Try London, Europe, three days and a daily budget of 120 GBP.
+
+## AI and data
+
+The demo uses labelled sample destinations and estimates. It cannot interpret free-text constraints. Nothing is checked against live travel data or booked.
+
+To use the existing OpenAI integration, copy `.env.example` to `.env.local`, set `AI_MODE=live` and add your server-side `OPENAI_API_KEY`. Restart the API. Live requests can incur API charges; their output is still unverified.
+
+Your preferences, results, edits and approval are saved in this browser. Budgets are per person, excluding travel to the destination. Changing the plan requires a new approval.
+
+Trip length accepts positive whole days, with no 14-day cap. Longer live itineraries are generated in sections; these can take longer and use more API calls.
+
+## Checks
+
+```sh
+npm run typecheck
+npm test
+npm run build
+npm run test:e2e
+```
+
+Browser tests use installed Chrome and local demo servers. No paid calls are made.
+
+[Project notes](docs/portfolio.md)

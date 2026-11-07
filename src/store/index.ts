@@ -1,72 +1,36 @@
-import { createStore, Store, useStore as baseUseStore } from "vuex";
-import { InjectionKey } from "vue";
-import { SurveyState, Question } from "@/types/survey";
+import { createStore, Store, useStore as baseUseStore } from 'vuex';
+import { InjectionKey } from 'vue';
+import { TravelState, Preferences, RecommendationBatch, ItineraryDraft, HistoryEntry } from '@/domain/types';
+import { freshState, restoreState, withPreferences } from '@/domain/state';
 
-const persistState = (store: Store<SurveyState>) => {
-	const savedState = localStorage.getItem("survey-state");
-	if (savedState) {
-		store.replaceState(JSON.parse(savedState));
-	}
-
-	store.subscribe((mutation, state) => {
-		localStorage.setItem("survey-state", JSON.stringify(state));
-	});
-};
-
-export const key: InjectionKey<Store<SurveyState>> = Symbol();
-
-export const store = createStore<SurveyState>({
-	state: {
-		currentQuestionIndex: 0,
-		answers: {},
-		questions: [],
-	},
-	mutations: {
-		SET_QUESTIONS(state, questions: Question[]) {
-			state.questions = questions;
-		},
-		SET_ANSWER(
-			state,
-			{ questionId, answer }: { questionId: string; answer: string }
-		) {
-			state.answers[questionId] = answer;
-		},
-		NEXT_QUESTION(state) {
-			if (state.currentQuestionIndex < state.questions.length - 1) {
-				state.currentQuestionIndex++;
-			}
-		},
-		PREVIOUS_QUESTION(state) {
-			if (state.currentQuestionIndex > 0) {
-				state.currentQuestionIndex--;
-			}
-		},
-		RESET_SURVEY(state) {
-			state.currentQuestionIndex = 0;
-			state.answers = {};
-			localStorage.removeItem("survey-state");
-		},
-	},
-	actions: {
-		loadQuestions({ commit }, questions: Question[]) {
-			commit("SET_QUESTIONS", questions);
-		},
-		saveAnswer({ commit }, payload: { questionId: string; answer: string }) {
-			commit("SET_ANSWER", payload);
-		},
-		nextQuestion({ commit }) {
-			commit("NEXT_QUESTION");
-		},
-		previousQuestion({ commit }) {
-			commit("PREVIOUS_QUESTION");
-		},
-		resetSurvey({ commit }) {
-			commit("RESET_SURVEY");
-		},
-	},
-	plugins: [persistState],
-});
-
-export function useStore() {
-	return baseUseStore(key);
+function load(): TravelState {
+  try { return restoreState(localStorage.getItem('travel-companion-v2'), localStorage.getItem('survey-state')); }
+  catch { return { ...freshState(), storageAvailable: false }; }
 }
+export const key: InjectionKey<Store<TravelState>> = Symbol();
+export const store = createStore<TravelState>({
+  state: load(),
+  mutations: {
+    SET_PREFERENCES(state, preferences: Preferences) { withPreferences(state, preferences); },
+    SAVE_RESULTS(state, batch: RecommendationBatch) {
+      state.batch = batch;
+      state.compareIds = state.compareIds.filter(id => batch.result.destinations.some(d => d.id === id));
+    },
+    TOGGLE_COMPARE(state, id: string) {
+      if (!state.batch?.result.destinations.some(d => d.id === id)) return;
+      if (state.compareIds.includes(id)) state.compareIds = state.compareIds.filter(item => item !== id);
+      else if (state.compareIds.length < 3) state.compareIds.push(id);
+    },
+    SAVE_ITINERARY(state, draft: ItineraryDraft) { state.itinerary = draft; },
+    LOG(state, entry: HistoryEntry) { state.history = [...state.history, entry].slice(-60); },
+  },
+  plugins: [current => current.subscribe((_mutation, state) => {
+    try {
+      localStorage.setItem('travel-companion-v2', JSON.stringify({ version: 2,
+        preferences: state.preferences, batch: state.batch, compareIds: state.compareIds, itinerary: state.itinerary, history: state.history,
+      }));
+      state.storageAvailable = true;
+    } catch { state.storageAvailable = false; }
+  })],
+});
+export function useStore() { return baseUseStore(key); }
