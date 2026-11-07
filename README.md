@@ -25,3 +25,15 @@ Requires Node 22.9+.
 `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run test:e2e`.
 
 Tests use a mocked Groq transport and test-only fixtures. Browser checks cover mobile and desktop. No model requests are made by automated tests.
+
+## Deploy: Netlify + Render
+
+1. Push the prepared code to `main` when ready to deploy.
+2. Render: New → Web Service → connect this repo. Use Node, build `npm ci --omit=dev`, start `npm run api`, health check `/api/status`, Free instance.
+3. Render environment: `GROQ_API_KEY`, `GROQ_MODEL=openai/gpt-oss-20b`, `NODE_VERSION=22`, `NODE_ENV=production`, `ALLOWED_ORIGIN=https://travel-companion-emr.netlify.app`. Render supplies `PORT`.
+4. Deploy and open `https://YOUR-SERVICE.onrender.com/api/status`. It should show `available: true` (key configured; not a model or quota check).
+5. Netlify → your existing site → Project configuration → Environment variables: add `VUE_APP_API_BASE_URL=https://YOUR-SERVICE.onrender.com` with Build scope, and `NODE_VERSION=22`.
+6. Netlify build command: `npm run build`; publish directory: `dist`. Trigger a new deploy after saving variables.
+7. Open the site, generate recommendations, open a destination and refresh. `public/_redirects` handles direct links and refreshes.
+
+The frontend only needs the public Render URL. Keep the Groq key in Render, never in a `VUE_APP_` variable or Netlify frontend build. Free Render services sleep after inactivity; the first request may need a retry. CORS limits browser origins, not direct API clients. This portfolio API has in-memory request limits and no accounts.

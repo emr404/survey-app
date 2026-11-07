@@ -1,24 +1,24 @@
 import { writeFileSync, renameSync, readFileSync, unlinkSync } from 'node:fs';
 import { createTravelServer } from './app.mjs';
 
-function listen(server, port) {
+function listen(server, port, host) {
   return new Promise((resolve, reject) => {
     function cleanup() { server.removeListener('error', failed); server.removeListener('listening', ready); }
     function failed(error) { cleanup(); reject(error); }
     function ready() { cleanup(); resolve(); }
     server.once('error', failed); server.once('listening', ready);
-    server.listen(port, '127.0.0.1');
+    server.listen(port, host);
   });
 }
 
-export async function startTravelApi({ port = 3001, runtimeFile, options = {}, report = console.log }) {
+export async function startTravelApi({ port = 3001, host = '127.0.0.1', fallbackPort = true, runtimeFile, options = {}, report = console.log }) {
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('API_PORT must be a valid port number.');
   const server = createTravelServer(options);
-  try { await listen(server, port); }
+  try { await listen(server, port, host); }
   catch (error) {
-    if (error.code !== 'EADDRINUSE') throw error;
+    if (error.code !== 'EADDRINUSE' || !fallbackPort) throw error;
     report(`Port ${port} is already in use. Starting this API on an available port instead.`);
-    await listen(server, 0);
+    await listen(server, 0, host);
   }
   const actualPort = server.address().port;
   if (runtimeFile) {
@@ -34,7 +34,7 @@ export async function startTravelApi({ port = 3001, runtimeFile, options = {}, r
       } catch { /* Another process may now own the discovery file. */ }
     });
   }
-  report(`Travel API (Groq) listening at http://127.0.0.1:${actualPort}`);
+  report(`Travel API (Groq) listening at http://${host}:${actualPort}`);
   if (runtimeFile) report('The frontend proxy follows this port automatically.');
   return server;
 }

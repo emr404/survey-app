@@ -1,3 +1,4 @@
+import { apiUrl } from './api';
 import { ref, onBeforeUnmount } from 'vue';
 import { Preferences, RecommendationResult } from '@/domain/types';
 import { RequestGate } from '@/domain/requests';
@@ -5,7 +6,7 @@ import { parseRecommendations } from '@/domain/responses';
 
 async function request(path: string, body: unknown, signal: AbortSignal): Promise<unknown> {
   let response: Response;
-  try { response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal }); }
+  try { response = await fetch(apiUrl(path), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal }); }
   catch (error) {
     if (signal.aborted) throw error;
     throw new Error('We couldn’t reach the travel service. Your saved work is safe. Check the connection and retry.');

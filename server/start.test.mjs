@@ -37,3 +37,13 @@ test('occupied API port selects a free port and the frontend discovers it withou
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('production can bind publicly and fails instead of switching an occupied platform port', async () => {
+  const api = await startTravelApi({ port: 0, host: '0.0.0.0', fallbackPort: false, options: { groqKey: 'test-only' }, report: () => {} });
+  try {
+    assert.equal(api.address().address, '0.0.0.0');
+    const port = api.address().port;
+    assert.equal((await fetch(`http://127.0.0.1:${port}/api/status`)).status, 200);
+    await assert.rejects(startTravelApi({ port, host: '0.0.0.0', fallbackPort: false, report: () => {} }), { code: 'EADDRINUSE' });
+  } finally { api.closeAllConnections(); await new Promise(resolve => api.close(resolve)); }
+});

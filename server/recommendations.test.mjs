@@ -81,3 +81,30 @@ test('repeated requests are rate limited', async () => {
     const response = await post(); assert.equal(response.status, 429); assert.equal(response.headers.get('retry-after'), '60');
   });
 });
+
+test('the configured frontend origin receives CORS headers and unapproved origins never reach Groq', async () => {
+  let calls = 0;
+  const origin = 'https://travel-companion-emr.netlify.app';
+  await withServer({ allowedOrigin: origin, fetchImpl: async (...args) => { calls++; return fetchFixture(...args); } }, async (post, base) => {
+    const response = await post(undefined, { headers: { 'Content-Type': 'application/json', Origin: origin } });
+    assert.equal(response.status, 200); assert.equal(response.headers.get('access-control-allow-origin'), origin); assert.equal(calls, 1);
+    for (const unapproved of ['https://other.example', 'https://travel-companion-emr.netlify.app.evil.example']) {
+      const denied = await post(undefined, { headers: { 'Content-Type': 'application/json', Origin: unapproved } });
+      assert.equal(denied.status, 403); assert.equal(denied.headers.get('access-control-allow-origin'), null);
+    }
+    assert.equal(calls, 1);
+    assert.equal((await fetch(base + '/api/status')).status, 200);
+  });
+});
+test('cross-origin preflight permits JSON requests only from the configured frontend', async () => {
+  const origin = 'https://travel-companion-emr.netlify.app';
+  await withServer({ allowedOrigin: origin }, async (_post, base) => {
+    const preflight = (extra = {}) => fetch(base + '/api/recommendations', { method: 'OPTIONS', headers: { Origin: origin, 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'content-type', ...extra } });
+    const response = await preflight(); assert.equal(response.status, 204);
+    assert.equal(response.headers.get('access-control-allow-origin'), origin);
+    assert.equal(response.headers.get('access-control-allow-headers'), 'Content-Type');
+    assert.equal((await preflight({ Origin: 'https://other.example' })).status, 403);
+    assert.equal((await preflight({ 'Access-Control-Request-Method': 'DELETE' })).status, 405);
+    assert.equal((await preflight({ 'Access-Control-Request-Headers': 'authorization' })).status, 400);
+  });
+});

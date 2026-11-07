@@ -15,6 +15,22 @@ export function createTravelServer(options = {}) {
       if (response.destroyed || response.writableEnded) return;
       response.writeHead(status); response.end(JSON.stringify(data));
     };
+    const origin = request.headers.origin;
+    if (origin) {
+      response.setHeader('Vary', 'Origin');
+      if (options.allowedOrigin && origin !== options.allowedOrigin) return send(403, { error: 'This website is not allowed to use this API.' });
+      if (origin === options.allowedOrigin) response.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    if (request.method === 'OPTIONS') {
+      if (!options.allowedOrigin || origin !== options.allowedOrigin) return send(403, { error: 'This website is not allowed to use this API.' });
+      if (!['GET', 'POST'].includes(request.headers['access-control-request-method'])) return send(405, { error: 'This request method is not supported.' });
+      const headers = String(request.headers['access-control-request-headers'] || '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean);
+      if (headers.some(value => value !== 'content-type')) return send(400, { error: 'This request header is not supported.' });
+      response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      response.setHeader('Access-Control-Max-Age', '600');
+      response.writeHead(204); response.end(); return;
+    }
     const url = new URL(request.url, 'http://localhost');
     if (url.pathname === '/api/destination-photo' && request.method === 'GET') {
       const now = Date.now();
