@@ -1,4 +1,3 @@
-// Real, independently retrieved photographs. Model output never supplies image URLs.
 const cache = new Map();
 const clean = value => typeof value === 'string' ? value.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim().slice(0, 300) : '';
 const safeUrl = (value, hosts) => { try { const url = new URL(value); return url.protocol === 'https:' && hosts.includes(url.hostname) && !url.username && !url.password ? url.href : null; } catch { return null; } };

@@ -1,4 +1,3 @@
-// Shared by the browser and Node. No network claims or external validation dependency.
 const contracts = require('./contracts.json');
 const { countryCodes } = require('./countries.js');
 

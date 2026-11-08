@@ -1,6 +1,5 @@
 import validation from '../shared/validation.js';
-// A fifth valid explanation should not discard an otherwise valid shortlist.
-// Only this presentation list is shortened; visa, costs and constraints are untouched.
+// Groq can reject an otherwise valid shortlist when it emits a fifth match reason.
 function parseOutput(text) {
   if (typeof text !== 'string' || text.length > 100000) throw new Error('Incomplete output');
   const result = JSON.parse(text, (_key, value) => typeof value === 'string' ? value.replace(/\s*\u2014\s*/g, ', ') : value);
@@ -20,7 +19,6 @@ export async function groqOutput(input, instructions, options = {}, signal) {
   const { groqKey, groqModel = 'openai/gpt-oss-20b', fetchImpl = fetch } = options;
   if (!groqKey) throw fail(503, 'Add GROQ_API_KEY to .env.local and restart the API.', 'groq_not_configured');
   const schema = structuredClone(validation.contracts.recommendations);
-  // Cap explanations on the server, then apply the original shared contract.
   delete schema.properties.destinations.items.properties.matchReasons.maxItems;
   let response;
   try {

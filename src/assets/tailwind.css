@@ -1,8 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* greek-ext */
 @font-face {
   font-family: 'GFS Neohellenic';
   font-style: normal;
@@ -11,7 +9,6 @@
   src: url(./fonts/neohellenic-400-greek-ext.woff2) format('woff2');
   unicode-range: U+1F00-1FFF;
 }
-/* greek */
 @font-face {
   font-family: 'GFS Neohellenic';
   font-style: normal;
@@ -20,7 +17,6 @@
   src: url(./fonts/neohellenic-400-greek.woff2) format('woff2');
   unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
 }
-/* vietnamese */
 @font-face {
   font-family: 'GFS Neohellenic';
   font-style: normal;
@@ -29,7 +25,6 @@
   src: url(./fonts/neohellenic-400-vietnamese.woff2) format('woff2');
   unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
 }
-/* latin */
 @font-face {
   font-family: 'GFS Neohellenic';
   font-style: normal;
@@ -38,7 +33,6 @@
   src: url(./fonts/neohellenic-400-latin.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
-/* greek-ext */
 @font-face {
   font-family: 'GFS Neohellenic';
   font-style: normal;
@@ -47,7 +41,6 @@
   src: url(./fonts/neohellenic-700-greek-ext.woff2) format('woff2');
   unicode-range: U+1F00-1FFF;
 }
-/* greek */
 @font-face {
   font-family: 'GFS Neohellenic';
   font-style: normal;
@@ -56,7 +49,6 @@
   src: url(./fonts/neohellenic-700-greek.woff2) format('woff2');
   unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
 }
-/* vietnamese */
 @font-face {
   font-family: 'GFS Neohellenic';
   font-style: normal;
@@ -65,7 +57,6 @@
   src: url(./fonts/neohellenic-700-vietnamese.woff2) format('woff2');
   unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
 }
-/* latin */
 @font-face {
   font-family: 'GFS Neohellenic';
   font-style: normal;
@@ -129,21 +120,20 @@ strong { font-weight: 650; }
 .skip-link:focus { top: 12px; }
 .skip-link:not(:focus) { clip-path: inset(50%); }
 .app-header { max-width: 1240px; margin: auto; padding: 30px 32px 24px; display: flex; gap: 20px; align-items: center; justify-content: space-between; }
-.brand { display: inline-flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 18px; letter-spacing: -.6px; font-weight: 700; }
-.brand-mark { font-size: 31px; line-height: 1; font-weight: 400; color: var(--accent); }
+.brand { display: inline-flex; gap: 10px; flex-wrap: wrap; align-items: center; letter-spacing: -.6px; font-weight: 700; }
+.brand-mark { font-weight: 400; }
 .journey-nav { max-width: 1176px; margin: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.journey-nav ol { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); padding: 0; }
+.journey-nav ol { list-style: none; display: grid; padding: 0; }
 .journey-nav li { min-width: 0; }
-.journey-nav a, .journey-nav .unavailable { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 18px 8px; font-size: 12px; font-weight: 600; color: var(--muted); }
-.journey-nav a.active { color: var(--ink); background: #edf4ee; box-shadow: inset 0 -2px var(--accent); }
+.journey-nav a, .journey-nav .unavailable { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 18px 8px; font-size: 12px; font-weight: 600; }
 .journey-nav a > span, .journey-nav .unavailable > span { width: 22px; height: 22px; display: grid; place-items: center; font-size: 10px; border: 1px solid #dce3d9; border-radius: 50%; }
-.journey-nav a.active > span { background: var(--accent); color: white; border-color: var(--accent); }
+.journey-nav a.active > span { color: white; }
 .journey-nav .unavailable { color: #7b857e; }
 .page { max-width: 1240px; margin: auto; padding: 0 32px 64px; }
 .page-heading { margin: 48px 0 34px; }
-.eyebrow { font-size: 10px; line-height: 1.5; font-weight: 700; text-transform: uppercase; letter-spacing: 1.7px; color: var(--accent); }
-h1 { font-family: var(--font-heading); font-weight: 600; font-size: clamp(42px, 5.5vw, 66px); font-weight: 600; line-height: 1.08; letter-spacing: -2.8px; margin: 16px 0 22px; max-width: 850px; }
-.page-heading > p:last-child, .page-heading > div > p:last-child { max-width: 560px; color: var(--muted); font-size: 15px; }
+.eyebrow { line-height: 1.5; font-weight: 700; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-heading); font-size: clamp(42px, 5.5vw, 66px); font-weight: 600; line-height: 1.08; margin: 16px 0 22px; max-width: 850px; }
+.page-heading > p:last-child, .page-heading > div > p:last-child { max-width: 560px; font-size: 15px; }
 .split-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
 .split-heading > .text-button { flex-shrink: 0; }
 .panel { color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); }
@@ -167,7 +157,7 @@ a.button:hover { text-decoration: none; }
 .field-error { color: var(--danger); font-size: 12px; margin-top: 7px; }
 .preferences-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 52px; align-items: start; }
 .preference-form fieldset { border: none; padding: 0; margin: 0 0 30px; min-width: 0; }
-.preference-form fieldset + fieldset { border-top: 1px solid var(--line); padding-top: 30px; }
+.preference-form fieldset + fieldset { border-top: 1px solid var(--line); }
 .preference-form legend { float: left; width: 100%; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; letter-spacing: -.35px; margin-bottom: 22px; }
 .preference-form legend + * { clear: both; }
 .section-number { font-family: var(--font-heading); color: #7e8e80; font-size: 18px; font-weight: 400; }
@@ -194,7 +184,7 @@ a.button:hover { text-decoration: none; }
 .preference-summary dt, .card-metrics dt { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
 .preference-summary dd { font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
 .summary-wide { grid-column: 1 / -1; }
-.refinement-panel { display: grid; grid-template-columns: 1fr auto; gap: 18px 28px; align-items: center; }
+.refinement-panel { grid-template-columns: 1fr auto; gap: 18px 28px; align-items: center; }
 .refinement-panel h2 { font-size: 19px; margin-top: 6px; }
 .refinement-options { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { border: 1px solid #dce3da; border-radius: 30px; min-height: 44px; padding: 10px 16px; background: transparent; color: var(--accent); font-size: 12px; font-weight: 500; }
@@ -236,7 +226,7 @@ a.button:hover { text-decoration: none; }
 .empty-state { margin: 28px 0; padding: 42px; text-align: center; }
 .empty-state > span { font-size: 34px; }
 .empty-state p { max-width: 540px; margin: 13px auto 24px; color: var(--muted); font-size: 14px; }
-.app-footer { max-width: 1176px; margin: 0 auto; padding: 22px 0 30px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 10px; color: var(--muted); }
+.app-footer { max-width: 1176px; margin: 0 auto; padding: 22px 0 30px; border-top: 1px solid var(--line); flex-wrap: wrap; font-size: 10px; }
 @media (max-width: 1240px) { .journey-nav, .app-footer { margin-left: 32px; margin-right: 32px; } .preferences-layout { gap: 30px; } }
 @media (max-width: 1050px) { .refinement-panel { grid-template-columns: 1fr; } .preferences-layout { grid-template-columns: minmax(0,1fr) 250px; gap: 24px; } .destination-grid { gap: 12px; } .destination-card { padding: 20px; }  }
 @media (max-width: 850px) { .preferences-layout { grid-template-columns: 1fr; } .preference-aside { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; } .destination-grid { grid-template-columns: 1fr; gap: 18px; } .destination-card { padding: 26px; } .card-metrics { grid-template-columns: 1fr 1fr; } .split-heading { flex-wrap: wrap; align-items: flex-start; gap: 16px; } }
@@ -272,16 +262,14 @@ a.button:hover { text-decoration: none; }
   .app-footer { margin: 0 18px; flex-direction: column; padding: 20px 0; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
-
-/* Background decoration stays separate from the interactive content. */
 #app { position: relative; isolation: isolate; min-height: 100vh; }
 .travel-backdrop { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; user-select: none; opacity: .35; }
 .travel-backdrop svg { position: absolute; width: max(1480px, 110vw); height: auto; top: 80px; left: 50%; transform: translateX(-50%); }
-.travel-backdrop .map-outline { fill: #deeadf; fill-opacity: .16; stroke: #688a70; stroke-opacity: .22; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
-.travel-backdrop .map-detail { fill: none; stroke: #688a70; stroke-opacity: .13; stroke-width: 1; }
-.travel-backdrop .flight-route { fill: none; stroke: #688a70; stroke-opacity: .3; stroke-width: 1.2; stroke-dasharray: 6 10; }
-.travel-backdrop .plane { fill: #ffffff; stroke: #608069; stroke-opacity: .36; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
-.brand-mark { display: inline-block; width: auto; height: auto; font-size: 34px; line-height: 1; background: transparent; border: 0; }
+.travel-backdrop .map-outline { fill-opacity: .16; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.travel-backdrop .map-detail { fill: none; stroke-width: 1; }
+.travel-backdrop .flight-route { fill: none; stroke-width: 1.2; stroke-dasharray: 6 10; }
+.travel-backdrop .plane { stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
+.brand-mark { display: inline-block; font-size: 34px; line-height: 1; background: transparent; border: 0; }
 @media (max-width: 540px) {
   .travel-backdrop svg { width: 1000px; top: 110px; left: 30%; opacity: .6; }
   .brand-mark { width: auto; height: auto; font-size: 29px; }
@@ -290,8 +278,6 @@ a.button:hover { text-decoration: none; }
   select { appearance: auto; background-image: none; }
   .travel-backdrop { display: none; }
 }
-
-/* Black canvas, white working surfaces, green route and action accents. */
 .app-header { color: #f3f6f3; }
 .brand-mark { width: 36px; height: 36px; color: #8bc89a; }
 .brand-mark svg { display: block; width: 100%; height: 100%; }
@@ -313,14 +299,12 @@ a.button:hover { text-decoration: none; }
   box-shadow: 0 0 10px 5px var(--paper);
 }
 .partial-note { color: #a4b5a9; }
-.app-footer { border-color: #273a2e; color: #a0b0a5; justify-content: center; align-items: center; }
+.app-footer { border-color: #273a2e; color: #a0b0a5; align-items: center; }
 .travel-backdrop .map-outline { fill: #275d38; stroke: #7cb88b; stroke-opacity: .3; }
 .travel-backdrop .map-detail { stroke: #6da77d; stroke-opacity: .2; }
 .travel-backdrop .flight-route { stroke: #88c095; stroke-opacity: .4; }
 .travel-backdrop .plane { fill: #080d0a; stroke: #91c99e; stroke-opacity: .6; }
 @media (max-width: 540px) { .brand-mark { width: 32px; height: 32px; } }
-
-/* A short path: your brief, then places to explore. */
 .journey-nav ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .app-footer { display: flex; justify-content: space-between; gap: 20px; }
 .recommendation-loading.request-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; min-height: 380px; text-align: center; margin: 20px 0 50px; }
@@ -334,7 +318,7 @@ a.button:hover { text-decoration: none; }
 .photo-frame { aspect-ratio: 16 / 10; background: #e5ebe6; overflow: hidden; border-radius: 6px; display: grid; place-items: center; }
 .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
 .photo-placeholder { color: #56675b; font-size: 12px; padding: 20px; text-align: center; }
-.destination-photo figcaption { color: #57645b; font-size: 10px; line-height: 1.5; margin-top: 7px; overflow-wrap: anywhere; }
+.destination-photo figcaption { color: #57645b; line-height: 1.5; margin-top: 7px; overflow-wrap: anywhere; }
 .destination-photo figcaption a { color: inherit; }
 .refinement-panel { display: block; margin-top: 30px; }
 .refinement-panel > summary { font-weight: 600; cursor: pointer; }
@@ -342,8 +326,6 @@ a.button:hover { text-decoration: none; }
 .refinement-options { margin: 16px 0; }
 @media (max-width: 600px) { .recommendation-loading.request-state { min-height: 340px; padding: 28px 18px; } }
 @media (prefers-reduced-motion: reduce) { .loading-orbit { animation: none; } }
-
-/* One Greek-inspired family across every screen and control. */
 h1 { letter-spacing: -1.3px; }
 h2, h3, .brand { letter-spacing: -.2px; }
 .brand { font-size: 24px; }
@@ -371,16 +353,12 @@ h2, h3, .brand { letter-spacing: -.2px; }
 .visa-status-list span { color: #4e6054; }
 .visa-advice details p { font-size: 15px; margin: 8px 0; }
 .visa-advice summary { font-size: 15px; }
-
-/* Invalid fields stay clear even after the click focus outline is removed. */
 .preference-form :is(input, select, textarea)[aria-invalid='true'], .preference-form .interest-options.has-error {
   border-color: #b23832;
   box-shadow: 0 0 0 3px #b2383230;
 }
 .preference-form .interest-options.has-error { border: 1px solid #b23832; border-radius: 8px; padding: 10px; }
 .preference-form .field-error { color: #a12f29; }
-
-/* One continuous destination overview, with clear sections inside it. */
 .destination-overview.panel { padding: 0; overflow: hidden; }
 .overview-photo { margin: 0; }
 .overview-photo .photo-frame { aspect-ratio: 21 / 7; border-radius: 0; }
@@ -422,8 +400,6 @@ h2, h3, .brand { letter-spacing: -.2px; }
   .destination-facts > div + div { border-top: 1px solid var(--line); padding-top: 24px; }
   .destination-overview-body > .visa-advice .visa-status-list { grid-template-columns: 1fr; }
 }
-
-/* A focused brief: one section at a time, followed by an editable review. */
 .brief-progress { margin-bottom: 28px; }
 .brief-progress ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); list-style: none; padding: 0; gap: 6px; }
 .brief-progress li { min-width: 0; margin: 0; }
