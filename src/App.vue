@@ -42,5 +42,5 @@ onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', pointerInput, true);
   document.removeEventListener('keydown', keyboardInput, true);
 });
-watch(() => route.fullPath, async () => { await nextTick(); document.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true }); });
+watch(() => route.path, async () => { await nextTick(); document.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true }); });
 </script>

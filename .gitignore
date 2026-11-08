@@ -2,8 +2,6 @@
 node_modules
 /dist
 /artifacts
-/test-results
-/playwright-report
 /.travel-api.json
 /.travel-api.json.*.tmp
 

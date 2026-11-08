@@ -9,5 +9,9 @@ export default createRouter({
     { path: '/destination/:id', component: () => import('@/pages/DestinationPage.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
-  scrollBehavior(_to, _from, saved) { return saved || { top: 0 }; },
+  scrollBehavior(to, from, saved) {
+    if (saved) return saved;
+    if (to.path === from.path && to.path === '/') return { el: '.preference-form', top: 20 };
+    return { top: 0 };
+  },
 });
